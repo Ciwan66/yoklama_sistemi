@@ -3,6 +3,7 @@ import '../models/database_models.dart';
 import '../services/database_helper.dart';
 import '../screens/student_management.dart';
 import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
 
 class ClassManagementScreen extends StatefulWidget {
   const ClassManagementScreen({super.key});
@@ -15,6 +16,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   final TextEditingController _classNameController = TextEditingController();
   List<Class> classes = [];
   final _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -25,7 +27,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   Future<void> _loadClasses() async {
     if (_authService.userId != null) {
       final loadedClasses =
-          await DatabaseHelper.instance.getAllClasses(_authService.userId!);
+          await _firestoreService.getAllClasses(_authService.userId!);
       setState(() {
         classes = loadedClasses;
       });
@@ -34,12 +36,13 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
 
   Future<void> _addClass(String className) async {
     if (_authService.userId != null) {
-      await DatabaseHelper.instance.addClass(
+      await _firestoreService.addClass(
         Class(
           name: className,
           userId: _authService.userId!,
         ),
       );
+      _loadClasses();
     }
   }
 
@@ -58,7 +61,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             trailing: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () async {
-                await DatabaseHelper.instance.deleteClass(classes[index].id!);
+                await _firestoreService.deleteClass(classes[index].id!);
                 _loadClasses();
               },
             ),
@@ -106,7 +109,6 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                   await _addClass(_classNameController.text);
                   _classNameController.clear();
                   Navigator.pop(context);
-                  _loadClasses();
                 }
               },
               child: const Text('Add'),

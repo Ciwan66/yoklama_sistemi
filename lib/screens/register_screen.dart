@@ -44,17 +44,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
+
         if (mounted) {
           Navigator.pop(context);
         }
+        return;
       } catch (e) {
-        setState(() {
-          _errorMessage = e.toString();
-        });
+        if (mounted) {
+          setState(() {
+            _errorMessage = e.toString();
+          });
+        }
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }

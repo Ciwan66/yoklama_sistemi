@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../models/database_models.dart';
-import '../services/database_helper.dart';
+import '../services/firestore_service.dart';
 import '../services/face_recognition_service.dart';
 
 class TakeAttendanceScreen extends StatefulWidget {
-  final int classId;
+  final String classId;
   const TakeAttendanceScreen({super.key, required this.classId});
 
   @override
@@ -18,7 +18,8 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
   final FaceRecognitionService _faceRecognitionService =
       FaceRecognitionService();
   List<Student> students = [];
-  Set<int> presentStudents = {};
+  Set<String> presentStudents = {};
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
 
   Future<void> _loadStudents() async {
     final loadedStudents =
-        await DatabaseHelper.instance.getStudentsByClass(widget.classId);
+        await _firestoreService.getStudentsByClass(widget.classId);
     setState(() {
       students = loadedStudents;
     });
@@ -76,7 +77,7 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
           );
 
           if (isMatch) {
-            await DatabaseHelper.instance.markAttendance(
+            await _firestoreService.markAttendance(
               Attendance(
                 studentId: student.id!,
                 classId: widget.classId,
@@ -110,7 +111,7 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
   Future<void> _saveAttendance() async {
     final now = DateTime.now();
     for (final student in students) {
-      await DatabaseHelper.instance.markAttendance(
+      await _firestoreService.markAttendance(
         Attendance(
           studentId: student.id!,
           classId: widget.classId,

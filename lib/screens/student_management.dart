@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../models/database_models.dart';
-import '../services/database_helper.dart';
+import '../services/firestore_service.dart';
 import '../services/face_recognition_service.dart';
 
 class StudentManagementScreen extends StatefulWidget {
-  final int classId;
+  final String classId;
 
   const StudentManagementScreen({super.key, required this.classId});
 
@@ -22,6 +22,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
   bool _isCameraInitialized = false;
   final FaceRecognitionService _faceRecognitionService =
       FaceRecognitionService();
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -51,7 +52,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
 
   Future<void> _loadStudents() async {
     final loadedStudents =
-        await DatabaseHelper.instance.getStudentsByClass(widget.classId);
+        await _firestoreService.getStudentsByClass(widget.classId);
     setState(() {
       students = loadedStudents;
     });
@@ -92,7 +93,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
                     rollNumber: _rollNumberController.text,
                     classId: widget.classId,
                   );
-                  await DatabaseHelper.instance.addStudent(student);
+                  await _firestoreService.addStudent(student);
                   _nameController.clear();
                   _rollNumberController.clear();
                   Navigator.pop(context);
@@ -153,7 +154,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
         faceData: faceData,
       );
 
-      await DatabaseHelper.instance.updateStudent(updatedStudent);
+      await _firestoreService.updateStudent(updatedStudent);
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(

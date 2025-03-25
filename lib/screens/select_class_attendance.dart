@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/database_models.dart';
-import '../services/database_helper.dart';
+import '../services/firestore_service.dart';
 import 'take_attendance_screen.dart';
 import '../services/auth_service.dart';
 
@@ -16,6 +16,7 @@ class _SelectClassAttendanceScreenState
     extends State<SelectClassAttendanceScreen> {
   List<Class> classes = [];
   final _authService = AuthService();
+  final _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -26,7 +27,7 @@ class _SelectClassAttendanceScreenState
   Future<void> _loadClasses() async {
     if (_authService.userId != null) {
       final loadedClasses =
-          await DatabaseHelper.instance.getAllClasses(_authService.userId!);
+          await _firestoreService.getAllClasses(_authService.userId!);
       setState(() {
         classes = loadedClasses;
       });
@@ -40,23 +41,25 @@ class _SelectClassAttendanceScreenState
         title: const Text('Select Class'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: ListView.builder(
-        itemCount: classes.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(classes[index].name),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      TakeAttendanceScreen(classId: classes[index].id!),
-                ),
-              );
-            },
-          );
-        },
-      ),
+      body: classes.isEmpty
+          ? const Center(child: Text('No classes found. Create a class first.'))
+          : ListView.builder(
+              itemCount: classes.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(classes[index].name),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TakeAttendanceScreen(classId: classes[index].id!),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }

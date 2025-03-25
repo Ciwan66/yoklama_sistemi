@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/database_models.dart';
-import '../services/database_helper.dart';
+import '../services/firestore_service.dart';
 
 class ViewAttendanceRecordsScreen extends StatefulWidget {
-  final int classId;
+  final String classId;
   const ViewAttendanceRecordsScreen({super.key, required this.classId});
 
   @override
@@ -17,6 +17,7 @@ class _ViewAttendanceRecordsScreenState
   List<Student> students = [];
   List<Attendance> attendanceRecords = [];
   DateTime selectedDate = DateTime.now();
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -26,9 +27,9 @@ class _ViewAttendanceRecordsScreenState
 
   Future<void> _loadData() async {
     final loadedStudents =
-        await DatabaseHelper.instance.getStudentsByClass(widget.classId);
-    final loadedAttendance = await DatabaseHelper.instance
-        .getAttendanceByDate(widget.classId, selectedDate);
+        await _firestoreService.getStudentsByClass(widget.classId);
+    final loadedAttendance = await _firestoreService.getAttendanceByDate(
+        widget.classId, selectedDate);
 
     setState(() {
       students = loadedStudents;

@@ -1,8 +1,8 @@
 class Student {
-  final int? id;
+  final String? id;
   final String name;
   final String rollNumber;
-  final int classId;
+  final String classId;
   final String? faceData;
 
   Student({
@@ -35,7 +35,7 @@ class Student {
 }
 
 class Class {
-  final int? id;
+  final String? id;
   final String name;
   final String userId;
 
@@ -63,9 +63,9 @@ class Class {
 }
 
 class Attendance {
-  final int? id;
-  final int studentId;
-  final int classId;
+  final String? id;
+  final String studentId;
+  final String classId;
   final DateTime date;
   final bool present;
 
