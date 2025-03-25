@@ -4,22 +4,25 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'face_recognition_web_service.dart';
+import 'face_recognition_stub.dart'
+    if (dart.library.html) 'face_recognition_web_service.dart';
 
 class FaceRecognitionService {
-  final FaceDetector _faceDetector = FaceDetector(
+  final _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      enableLandmarks: true,
+      enableContours: true,
       enableClassification: true,
-      performanceMode: FaceDetectorMode.accurate,
+      enableLandmarks: true,
     ),
   );
 
-  // Web için farklı servis
-  FaceRecognitionWebService? _webService;
+  // Web için servis
+  final _webService = kIsWeb ? FaceRecognitionWebService() : null;
+
+  // Kamera servisi initialize olmuş mu
+  bool _isInitialized = false;
   // Mobil için
   CameraController? _cameraController;
-  bool _isInitialized = false;
 
   // Servisi platform'a göre başlat
   Future<bool> initialize() async {
@@ -27,7 +30,6 @@ class FaceRecognitionService {
 
     if (kIsWeb) {
       // Web platformunda
-      _webService = FaceRecognitionWebService();
       _isInitialized = await _webService!.initializeCamera();
       return _isInitialized;
     } else {

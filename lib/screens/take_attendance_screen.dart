@@ -27,7 +27,9 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    if (!kIsWeb) {
+      _initializeCamera();
+    }
     _loadStudents();
   }
 
@@ -402,7 +404,9 @@ class _TakeAttendanceScreenState extends State<TakeAttendanceScreen> {
 
   @override
   void dispose() {
-    _cameraController.dispose();
+    if (!kIsWeb) {
+      _cameraController.dispose();
+    }
     _faceRecognitionService.dispose();
     super.dispose();
   }
