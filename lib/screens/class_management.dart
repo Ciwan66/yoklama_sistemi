@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/database_models.dart';
 import '../services/database_helper.dart';
 import '../screens/student_management.dart';
+import '../services/auth_service.dart';
 
 class ClassManagementScreen extends StatefulWidget {
   const ClassManagementScreen({super.key});
@@ -13,6 +14,7 @@ class ClassManagementScreen extends StatefulWidget {
 class _ClassManagementScreenState extends State<ClassManagementScreen> {
   final TextEditingController _classNameController = TextEditingController();
   List<Class> classes = [];
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -21,10 +23,24 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   }
 
   Future<void> _loadClasses() async {
-    final loadedClasses = await DatabaseHelper.instance.getAllClasses();
-    setState(() {
-      classes = loadedClasses;
-    });
+    if (_authService.userId != null) {
+      final loadedClasses =
+          await DatabaseHelper.instance.getAllClasses(_authService.userId!);
+      setState(() {
+        classes = loadedClasses;
+      });
+    }
+  }
+
+  Future<void> _addClass(String className) async {
+    if (_authService.userId != null) {
+      await DatabaseHelper.instance.addClass(
+        Class(
+          name: className,
+          userId: _authService.userId!,
+        ),
+      );
+    }
   }
 
   @override
@@ -87,9 +103,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             TextButton(
               onPressed: () async {
                 if (_classNameController.text.isNotEmpty) {
-                  await DatabaseHelper.instance.addClass(
-                    Class(name: _classNameController.text),
-                  );
+                  await _addClass(_classNameController.text);
                   _classNameController.clear();
                   Navigator.pop(context);
                   _loadClasses();

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "455577115636",
+    "project_id": "yoklama-sistemi-d808c",
+    "storage_bucket": "yoklama-sistemi-d808c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455577115636:android:31df40013e39bdd8e377a1",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKYCx-lW7kIx-rLflu0NWxBUIvfNf1oLo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455577115636:android:4379a86100503afbe377a1",
+        "android_client_info": {
+          "package_name": "com.example.yoklama_sistemi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKYCx-lW7kIx-rLflu0NWxBUIvfNf1oLo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

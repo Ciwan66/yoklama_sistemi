@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/database_models.dart';
 import '../services/database_helper.dart';
 import 'take_attendance_screen.dart';
+import '../services/auth_service.dart';
 
 class SelectClassAttendanceScreen extends StatefulWidget {
   const SelectClassAttendanceScreen({super.key});
@@ -14,6 +15,7 @@ class SelectClassAttendanceScreen extends StatefulWidget {
 class _SelectClassAttendanceScreenState
     extends State<SelectClassAttendanceScreen> {
   List<Class> classes = [];
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -22,10 +24,13 @@ class _SelectClassAttendanceScreenState
   }
 
   Future<void> _loadClasses() async {
-    final loadedClasses = await DatabaseHelper.instance.getAllClasses();
-    setState(() {
-      classes = loadedClasses;
-    });
+    if (_authService.userId != null) {
+      final loadedClasses =
+          await DatabaseHelper.instance.getAllClasses(_authService.userId!);
+      setState(() {
+        classes = loadedClasses;
+      });
+    }
   }
 
   @override

@@ -37,16 +37,19 @@ class Student {
 class Class {
   final int? id;
   final String name;
+  final String userId;
 
   Class({
     this.id,
     required this.name,
+    required this.userId,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
+      'user_id': userId,
     };
   }
 
@@ -54,6 +57,7 @@ class Class {
     return Class(
       id: map['id'],
       name: map['name'],
+      userId: map['user_id'],
     );
   }
 }

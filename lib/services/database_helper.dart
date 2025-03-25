@@ -20,8 +20,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -29,7 +30,8 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE classes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        user_id TEXT NOT NULL
       )
     ''');
 
@@ -57,15 +59,26 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db
+          .execute('ALTER TABLE classes ADD COLUMN user_id TEXT DEFAULT ""');
+    }
+  }
+
   // Class operations
   Future<int> addClass(Class classItem) async {
     final db = await database;
-    return await db.insert('classes', classItem.toMap());
+    return db.insert('classes', classItem.toMap());
   }
 
-  Future<List<Class>> getAllClasses() async {
+  Future<List<Class>> getAllClasses(String userId) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('classes');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'classes',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
     return List.generate(maps.length, (i) => Class.fromMap(maps[i]));
   }
 
