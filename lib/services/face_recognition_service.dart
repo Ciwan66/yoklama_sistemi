@@ -2,6 +2,9 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'face_recognition_web_service.dart';
 
 class FaceRecognitionService {
   final FaceDetector _faceDetector = FaceDetector(
@@ -11,6 +14,79 @@ class FaceRecognitionService {
       performanceMode: FaceDetectorMode.accurate,
     ),
   );
+
+  // Web için farklı servis
+  FaceRecognitionWebService? _webService;
+  // Mobil için
+  CameraController? _cameraController;
+  bool _isInitialized = false;
+
+  // Servisi platform'a göre başlat
+  Future<bool> initialize() async {
+    if (_isInitialized) return true;
+
+    if (kIsWeb) {
+      // Web platformunda
+      _webService = FaceRecognitionWebService();
+      _isInitialized = await _webService!.initializeCamera();
+      return _isInitialized;
+    } else {
+      // Mobil platformlarda
+      try {
+        final cameras = await availableCameras();
+        final frontCamera = cameras.firstWhere(
+          (camera) => camera.lensDirection == CameraLensDirection.front,
+          orElse: () => cameras.first,
+        );
+
+        _cameraController = CameraController(
+          frontCamera,
+          ResolutionPreset.medium,
+          enableAudio: false,
+        );
+        await _cameraController!.initialize();
+        _isInitialized = true;
+        return true;
+      } catch (e) {
+        print('Kamera başlatılamadı: $e');
+        _isInitialized = false;
+        return false;
+      }
+    }
+  }
+
+  // Kamera Önizleme Widget'ı - Platform'a göre farklı
+  Widget buildPreview() {
+    if (!_isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (kIsWeb) {
+      return _webService!.buildWebCameraPreview();
+    } else {
+      return CameraPreview(_cameraController!);
+    }
+  }
+
+  // Görüntü yakalama - Web'de ve mobilde farklı çalışır
+  Future<List<double>?> captureFace() async {
+    if (!_isInitialized) return null;
+
+    try {
+      if (kIsWeb) {
+        // Web'de yüz tanıma (basit bir simülasyon)
+        return List.generate(128, (index) => (index % 10) / 10); // Yapay veri
+      } else {
+        // Mobil platformda yüz tanıma
+        final image = await _cameraController!.takePicture();
+        // Burada mobil için gerçek yüz tanıma işlemleri yapılır
+        return List.generate(128, (index) => (index % 10) / 10); // Yapay veri
+      }
+    } catch (e) {
+      print('Yüz yakalama hatası: $e');
+      return null;
+    }
+  }
 
   Future<String?> getFaceData(XFile image) async {
     try {
@@ -66,7 +142,14 @@ class FaceRecognitionService {
     return 0;
   }
 
+  // Kaynakları temizle
   void dispose() {
+    if (kIsWeb) {
+      _webService?.dispose();
+    } else {
+      _cameraController?.dispose();
+    }
+    _isInitialized = false;
     _faceDetector.close();
   }
 }

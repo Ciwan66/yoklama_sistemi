@@ -13,6 +13,8 @@ import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,10 +22,12 @@ void main() async {
   // Türkçe için tarih formatı verilerini yükleyin
   await initializeDateFormatting('tr_TR', null);
 
-  // Geliştirme sırasında var olan veritabanını sil
-  final databasesPath = await getDatabasesPath();
-  final path = join(databasesPath, 'attendance.db');
-  await deleteDatabase(path);
+  // Web olmayan platformlarda veritabanını sil
+  if (!kIsWeb) {
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'attendance.db');
+    await deleteDatabase(path);
+  }
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

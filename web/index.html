@@ -18,21 +18,74 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Yoklama Sistemi">
 
   <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="yoklama_sistemi">
+  <meta name="apple-mobile-web-app-title" content="Yoklama Sistemi">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>yoklama_sistemi</title>
+  <title>Yoklama Sistemi</title>
   <link rel="manifest" href="manifest.json">
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+  
+  <!-- Firebase Script Yükleme -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+
+  <!-- Mevcut içeriği koruyun ve bu script etiketini </body> etiketinden önce ekleyin -->
+  <script>
+    // Kamera izinleri için yardımcı fonksiyon
+    async function checkCameraPermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Başarılı olduğunda akışı kapatın
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        return true;
+      } catch (e) {
+        console.error("Kamera izni alınamadı:", e);
+        return false;
+      }
+    }
+
+    // Kamera izni kontrol et
+    window.addEventListener('DOMContentLoaded', async function() {
+      const hasPermission = await checkCameraPermission();
+      if (!hasPermission) {
+        console.warn("Kullanıcı kamera izni vermedi, alternatif yöntemler kullanılacak");
+      }
+    });
+  </script>
 </body>
 </html>
