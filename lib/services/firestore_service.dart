@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/database_models.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Sınıf işlemleri
   Future<String> addClass(Class classItem) async {
@@ -14,19 +17,29 @@ class FirestoreService {
   }
 
   Future<List<Class>> getAllClasses(String userId) async {
-    final snapshot = await _firestore
-        .collection('classes')
-        .where('user_id', isEqualTo: userId)
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('classes')
+          .where('user_id', isEqualTo: userId)
+          .get()
+          .timeout(const Duration(seconds: 5));
 
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return Class(
-        id: doc.id,
-        name: data['name'],
-        userId: data['user_id'],
-      );
-    }).toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Class(
+          id: doc.id,
+          name: data['name'],
+          userId: data['user_id'],
+        );
+      }).toList();
+    } catch (e) {
+      print('Sınıfları getirme hatası: $e');
+      if (e is FirebaseException && e.code == 'permission-denied') {
+        print('Yetki hatası. Kullanıcı ID: $userId');
+      }
+      // Boş liste döndür, böylece uygulama çökmez
+      return [];
+    }
   }
 
   Future<void> deleteClass(String classId) async {
@@ -78,6 +91,39 @@ class FirestoreService {
       'roll_number': student.rollNumber,
       'face_data': student.faceData,
     });
+  }
+
+  // Öğrenci silme işlemi
+  Future<void> deleteStudent(String studentId) async {
+    try {
+      print('Öğrenci silme başlatıldı: $studentId');
+      // Öğrenciyi veritabanından sil
+      await _firestore
+          .collection('students')
+          .doc(studentId)
+          .delete()
+          .timeout(const Duration(seconds: 5));
+
+      print('Öğrenci silindi, yoklama kayıtları temizleniyor');
+      // Öğrenciye ait yoklama kayıtlarını da temizle
+      final attendanceSnapshot = await _firestore
+          .collection('attendance')
+          .where('student_id', isEqualTo: studentId)
+          .get()
+          .timeout(const Duration(seconds: 5));
+
+      for (var doc in attendanceSnapshot.docs) {
+        await doc.reference.delete().timeout(const Duration(seconds: 3));
+      }
+
+      print('Öğrenci ve ilgili tüm kayıtlar silindi');
+    } catch (e) {
+      print('Öğrenci silme hatası: $e');
+      if (e is FirebaseException && e.code == 'permission-denied') {
+        print('Yetki hatası. Kullanıcı ID: ${_auth.currentUser?.uid}');
+      }
+      rethrow;
+    }
   }
 
   // Yoklama işlemleri

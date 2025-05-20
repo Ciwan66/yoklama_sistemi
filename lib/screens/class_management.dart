@@ -55,6 +55,30 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     }
   }
 
+  Future<void> _deleteClass(String classId) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      await _firestoreService
+          .deleteClass(classId)
+          .timeout(const Duration(seconds: 10));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sınıf başarıyla silindi')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,9 +271,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                await _firestoreService.deleteClass(classItem.id!);
-                Navigator.pop(context);
-                _loadClasses();
+                await _deleteClass(classItem.id!);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
