@@ -65,14 +65,19 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
           .deleteClass(classId)
           .timeout(const Duration(seconds: 10));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sınıf başarıyla silindi')),
-      );
+      await _loadClasses();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sınıf başarıyla silindi')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hata: $e')),
-      );
-    } finally {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
+      }
       setState(() {
         _isLoading = false;
       });
@@ -271,6 +276,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
+                Navigator.pop(context);
                 await _deleteClass(classItem.id!);
               },
               style: ElevatedButton.styleFrom(

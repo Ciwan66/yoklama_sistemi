@@ -347,63 +347,97 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
       itemBuilder: (context, index) {
         final student = students[index];
         return Card(
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          elevation: 2,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: student.faceData != null
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey[400],
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 20,
+              backgroundColor: Theme.of(context).primaryColor,
+              child: Text(
+                student.name.isNotEmpty ? student.name[0].toUpperCase() : '?',
+                style: const TextStyle(color: Colors.white),
               ),
             ),
-            title: Text(
-              student.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            title: Text(student.name),
+            subtitle: Text('Öğrenci No: ${student.rollNumber}'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _showDeleteConfirmation(student),
+                ),
+              ],
             ),
-            subtitle: Text(
-              'Öğrenci No: ${student.rollNumber}',
-              style: TextStyle(
-                color: Colors.grey[600],
-              ),
-            ),
-            trailing: student.faceData == null
-                ? OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _selectedStudent = student;
-                      });
-                      _showFaceRegistrationDialog();
-                    },
-                    icon: const Icon(Icons.face),
-                    label: const Text('Yüz Kaydı'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                  )
-                : Chip(
-                    label: const Text('Yüz Tanımlı'),
-                    avatar: const Icon(
-                      Icons.check_circle,
-                      size: 18,
-                    ),
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryContainer,
-                    labelStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      fontSize: 12,
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
           ),
         );
       },
     );
+  }
+
+  void _showDeleteConfirmation(Student student) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Öğrenciyi Sil'),
+          content: Text(
+              '${student.name} adlı öğrenciyi silmek istediğinize emin misiniz?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteStudent(student);
+              },
+              child: const Text('Sil'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteStudent(Student student) async {
+    if (student.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Öğrenci ID bulunamadı')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _firestoreService.deleteStudent(student.id!);
+
+      setState(() {
+        students.removeWhere((s) => s.id == student.id);
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${student.name} başarıyla silindi')),
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Öğrenci silinirken hata oluştu: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
