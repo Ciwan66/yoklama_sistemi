@@ -15,6 +15,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,7 +85,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
     );
   }
 }
